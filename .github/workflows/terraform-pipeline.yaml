@@ -10,7 +10,9 @@ on:
         required: true
         type: string
     secrets:
-      GH_SSH_KEY: ${{ secrets.GH_SSH_KEY }}
+      GH_SSH_KEY:
+        description: 'needed for registry login'
+        required: false
         
 
 
