@@ -50,11 +50,11 @@ jobs:
       - name: Terraform Init
         id: init        
         run: terraform init
-        # env:
-        #   GIT_SSH_COMMAND: "echo '${{ secrets.GH_SSH_KEY }}' > id_rsa
-        #     && ssh-keyscan github.com > known_hosts
-        #     && chmod 600 id_rsa known_hosts
-        #     && ssh -i ./id_rsa -o UserKnownHostsFile=./known_hosts"
+        env:
+          GIT_SSH_COMMAND: "echo '${{ secrets.GH_SSH_KEY }}' > id_rsa
+            && ssh-keyscan github.com > known_hosts
+            && chmod 600 id_rsa known_hosts
+            && ssh -i ./id_rsa -o UserKnownHostsFile=./known_hosts"
       
       - name: Terraform Validate
         id: validate
