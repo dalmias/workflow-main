@@ -9,9 +9,7 @@ on:
       account_number:
         required: true
         type: string
-    secrets:
-      envPAT:
-        required: true
+
 
 permissions:
   id-token: write
