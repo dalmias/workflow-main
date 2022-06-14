@@ -15,15 +15,15 @@ permissions:
   id-token: write
   contents: read    # This is required for actions/checkout
 
-defaults:
-  run:
-    working-directory: {{ input.terraform_file_path }}
 
 
 jobs:
   reusable_workflow_job_terraform:
     name: "Terraform"
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: {{ input.terraform_file_path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
