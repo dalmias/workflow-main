@@ -3,7 +3,10 @@ name: "Terraform"
 on:
   workflow_call:
     inputs:
-      username:
+      terraform_file_path:
+        required: true
+        type: string
+      account_number:
         required: true
         type: string
     secrets:
@@ -13,6 +16,11 @@ on:
 permissions:
   id-token: write
   contents: read    # This is required for actions/checkout
+
+defaults:
+  run:
+    working-directory: {{ input.terraform_file_path }}
+
 
 jobs:
   reusable_workflow_job_terraform:
@@ -25,25 +33,24 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.1.8
+          terraform_version: 1.1.9
 
       - name: Terraform Format
         id: fmt
-        working-directory: ./sandbox
         run: terraform fmt -check
 
       - name: Configure AWS credentials from Test account
         uses: aws-actions/configure-aws-credentials@master
         with:
-          role-to-assume: arn:aws:iam::345846423675:role/setup-iam-for-github-Role-LPS9LPS117XV
+          role-to-assume: arn:aws:iam::{{ input.account_number }}:role/setup-iam-for-github-Role-LPS9LPS117XV
           aws-region: us-east-2
 
       - name: Terraform Init
         id: init        
-        working-directory: ./sandbox
+        working-directory: {{ input.terraform_file_path }}
         run: terraform init
         env:
-          GIT_SSH_COMMAND: "echo '${{ secrets.GH_SSH_KEY }}' > id_rsa
+          GIT_SSH_COMMAND: "echo '${{ secrets.DALMIAS_SSH_KEY }}' > id_rsa
             && ssh-keyscan github.com > known_hosts
             && chmod 600 id_rsa known_hosts
             && ssh -i ./id_rsa -o UserKnownHostsFile=./known_hosts"
@@ -55,39 +62,9 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        working-directory: ./sandbox
         if: github.event_name == 'pull_request'
         run: terraform plan -no-color -input=false
         continue-on-error: true
-
-      - uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.GIT_TOKEN }}
-          script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-
-            <details><summary>Show Plan</summary>
-
-            \`\`\`\n
-            ${process.env.PLAN}
-            \`\`\`
-
-            </details>
-
-            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
