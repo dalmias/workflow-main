@@ -24,7 +24,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: {{ input.terraform_file_path }}
+        working-directory: {{ inputs.terraform_file_path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
