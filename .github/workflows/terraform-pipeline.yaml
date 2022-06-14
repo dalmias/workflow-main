@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
+        shell: bash
         working-directory: {{ input.terraform_file_path }}
     steps:
       - name: Checkout
@@ -45,7 +46,6 @@ jobs:
 
       - name: Terraform Init
         id: init        
-        working-directory: {{ input.terraform_file_path }}
         run: terraform init
         env:
           GIT_SSH_COMMAND: "echo '${{ secrets.DALMIAS_SSH_KEY }}' > id_rsa
@@ -55,7 +55,6 @@ jobs:
       
       - name: Terraform Validate
         id: validate
-        working-directory: ./sandbox
         run: terraform validate -no-color
 
       - name: Terraform Plan
