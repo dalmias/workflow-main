@@ -9,13 +9,14 @@ on:
       account_number:
         required: true
         type: string
+    secrets:
+      SSHKey:
+        required: true
 
 
 permissions:
   id-token: write
   contents: read    # This is required for actions/checkout
-
-
 
 jobs:
   reusable_workflow_job_terraform:
@@ -48,7 +49,7 @@ jobs:
         id: init        
         run: terraform init
         env:
-          GIT_SSH_COMMAND: "echo '${{ secrets.DALMIAS_SSH_KEY }}' > id_rsa
+          GIT_SSH_COMMAND: "echo '${{ secrets.SSHKey }}' > id_rsa
             && ssh-keyscan github.com > known_hosts
             && chmod 600 id_rsa known_hosts
             && ssh -i ./id_rsa -o UserKnownHostsFile=./known_hosts"
